@@ -32,11 +32,11 @@
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
 #include <linux/kernel.h>
+#include <linux/mc146818rtc.h>
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/sfi.h>
 
-#include <asm-generic/rtc.h>
 #include <asm/intel_scu_ipc.h>
 #include <asm/intel-mid.h>
 #include <asm/intel_mid_vrtc.h>
@@ -105,7 +105,7 @@ static int mrst_read_time(struct device *dev, struct rtc_time *time)
 	/* Adjust for the 1972/1900 */
 	time->tm_year += 72;
 	time->tm_mon--;
-	return rtc_valid_tm(time);
+	return 0;
 }
 
 static int mrst_set_time(struct device *dev, struct rtc_time *time)
@@ -122,7 +122,7 @@ static int mrst_set_time(struct device *dev, struct rtc_time *time)
 	min = time->tm_min;
 	sec = time->tm_sec;
 
-	if (yrs < 72 || yrs > 138)
+	if (yrs < 72 || yrs > 172)
 		return -EINVAL;
 	yrs -= 72;
 
@@ -148,14 +148,6 @@ static int mrst_read_alarm(struct device *dev, struct rtc_wkalrm *t)
 
 	if (mrst->irq <= 0)
 		return -EIO;
-
-	/* Basic alarms only support hour, minute, and seconds fields.
-	 * Some also support day and month, for alarms up to a year in
-	 * the future.
-	 */
-	t->time.tm_mday = -1;
-	t->time.tm_mon = -1;
-	t->time.tm_year = -1;
 
 	/* vRTC only supports binary mode */
 	spin_lock_irq(&rtc_lock);

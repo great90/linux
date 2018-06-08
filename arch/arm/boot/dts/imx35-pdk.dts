@@ -17,7 +17,7 @@
 	model = "Freescale i.MX35 Product Development Kit";
 	compatible = "fsl,imx35-pdk", "fsl,imx35";
 
-	memory {
+	memory@80000000 {
 		reg = <0x80000000 0x8000000>,
 		      <0x90000000 0x8000000>;
 	};
@@ -63,6 +63,6 @@
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };

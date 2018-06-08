@@ -7,10 +7,12 @@
  */
 
 #include <linux/perf_event.h>
-#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/export.h>
 #include <linux/pci.h>
 #include <linux/ptrace.h>
 #include <linux/syscore_ops.h>
+#include <linux/sched/clock.h>
 
 #include <asm/apic.h>
 
@@ -887,7 +889,7 @@ static void force_ibs_eilvt_setup(void)
 	if (!ibs_eilvt_valid())
 		goto out;
 
-	pr_info("IBS: LVT offset %d assigned\n", offset);
+	pr_info("LVT offset %d assigned\n", offset);
 
 	return;
 out:
@@ -1009,7 +1011,7 @@ static __init int amd_ibs_init(void)
 	 * all online cpus.
 	 */
 	cpuhp_setup_state(CPUHP_AP_PERF_X86_AMD_IBS_STARTING,
-			  "AP_PERF_X86_AMD_IBS_STARTING",
+			  "perf/x86/amd/ibs:starting",
 			  x86_pmu_amd_ibs_starting_cpu,
 			  x86_pmu_amd_ibs_dying_cpu);
 

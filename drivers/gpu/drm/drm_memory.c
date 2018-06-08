@@ -44,7 +44,7 @@
 # include <asm/agp.h>
 #else
 # ifdef __powerpc__
-#  define PAGE_AGP	__pgprot(_PAGE_KERNEL | _PAGE_NO_CACHE)
+#  define PAGE_AGP	pgprot_noncached_wc(PAGE_KERNEL)
 # else
 #  define PAGE_AGP	PAGE_KERNEL
 # endif
@@ -149,3 +149,16 @@ void drm_legacy_ioremapfree(struct drm_local_map *map, struct drm_device *dev)
 		iounmap(map->handle);
 }
 EXPORT_SYMBOL(drm_legacy_ioremapfree);
+
+u64 drm_get_max_iomem(void)
+{
+	struct resource *tmp;
+	resource_size_t max_iomem = 0;
+
+	for (tmp = iomem_resource.child; tmp; tmp = tmp->sibling) {
+		max_iomem = max(max_iomem,  tmp->end);
+	}
+
+	return max_iomem;
+}
+EXPORT_SYMBOL(drm_get_max_iomem);

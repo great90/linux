@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Crypto-API module for CRC-32 algorithms implemented with the
  * z/Architecture Vector Extension Facility.
@@ -51,6 +52,9 @@ u32 crc32c_le_vgfm_16(u32 crc, unsigned char const *buf, size_t size);
 		struct kernel_fpu vxstate;				    \
 		unsigned long prealign, aligned, remaining;		    \
 									    \
+		if (datalen < VX_MIN_LEN + VX_ALIGN_MASK)		    \
+			return ___crc32_sw(crc, data, datalen);		    \
+									    \
 		if ((unsigned long)data & VX_ALIGN_MASK) {		    \
 			prealign = VX_ALIGNMENT -			    \
 				  ((unsigned long)data & VX_ALIGN_MASK);    \
@@ -59,15 +63,12 @@ u32 crc32c_le_vgfm_16(u32 crc, unsigned char const *buf, size_t size);
 			data = (void *)((unsigned long)data + prealign);    \
 		}							    \
 									    \
-		if (datalen < VX_MIN_LEN)				    \
-			return ___crc32_sw(crc, data, datalen);		    \
-									    \
 		aligned = datalen & ~VX_ALIGN_MASK;			    \
 		remaining = datalen & VX_ALIGN_MASK;			    \
 									    \
 		kernel_fpu_begin(&vxstate, KERNEL_VXR_LOW);		    \
 		crc = ___crc32_vx(crc, data, aligned);			    \
-		kernel_fpu_end(&vxstate);				    \
+		kernel_fpu_end(&vxstate, KERNEL_VXR_LOW);		    \
 									    \
 		if (remaining)						    \
 			crc = ___crc32_sw(crc, data + aligned, remaining);  \
@@ -238,6 +239,7 @@ static struct shash_alg crc32_vx_algs[] = {
 			.cra_name	 = "crc32",
 			.cra_driver_name = "crc32-vx",
 			.cra_priority	 = 200,
+			.cra_flags	 = CRYPTO_ALG_OPTIONAL_KEY,
 			.cra_blocksize	 = CRC32_BLOCK_SIZE,
 			.cra_ctxsize	 = sizeof(struct crc_ctx),
 			.cra_module	 = THIS_MODULE,
@@ -258,6 +260,7 @@ static struct shash_alg crc32_vx_algs[] = {
 			.cra_name	 = "crc32be",
 			.cra_driver_name = "crc32be-vx",
 			.cra_priority	 = 200,
+			.cra_flags	 = CRYPTO_ALG_OPTIONAL_KEY,
 			.cra_blocksize	 = CRC32_BLOCK_SIZE,
 			.cra_ctxsize	 = sizeof(struct crc_ctx),
 			.cra_module	 = THIS_MODULE,
@@ -278,6 +281,7 @@ static struct shash_alg crc32_vx_algs[] = {
 			.cra_name	 = "crc32c",
 			.cra_driver_name = "crc32c-vx",
 			.cra_priority	 = 200,
+			.cra_flags	 = CRYPTO_ALG_OPTIONAL_KEY,
 			.cra_blocksize	 = CRC32_BLOCK_SIZE,
 			.cra_ctxsize	 = sizeof(struct crc_ctx),
 			.cra_module	 = THIS_MODULE,

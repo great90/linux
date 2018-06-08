@@ -119,18 +119,21 @@ static void __init sh_of_mem_reserve(void)
 static void __init sh_of_time_init(void)
 {
 	pr_info("SH generic board support: scanning for clocksource devices\n");
-	clocksource_probe();
+	timer_probe();
 }
 
 static void __init sh_of_setup(char **cmdline_p)
 {
-	unflatten_device_tree();
+	struct device_node *root;
 
 	board_time_init = sh_of_time_init;
 
-	sh_mv.mv_name = of_flat_dt_get_machine_name();
-	if (!sh_mv.mv_name)
-		sh_mv.mv_name = "Unknown SH model";
+	sh_mv.mv_name = "Unknown SH model";
+	root = of_find_node_by_path("/");
+	if (root) {
+		of_property_read_string(root, "model", &sh_mv.mv_name);
+		of_node_put(root);
+	}
 
 	sh_of_smp_probe();
 }

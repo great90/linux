@@ -19,8 +19,7 @@
 #include <asm/dma-coherence.h>
 #include <asm/fw/fw.h>
 #include <asm/mips-boards/generic.h>
-#include <asm/mips-cm.h>
-#include <asm/mips-cpc.h>
+#include <asm/mips-cps.h>
 #include <asm/prom.h>
 #include <asm/smp-ops.h>
 #include <asm/traps.h>
@@ -59,29 +58,6 @@ const char *get_system_type(void)
 	return sys_type;
 }
 
-static void __init plat_setup_iocoherency(void)
-{
-	/*
-	 * Kernel has been configured with software coherency
-	 * but we might choose to turn it off and use hardware
-	 * coherency instead.
-	 */
-	if (mips_cm_numiocu() != 0) {
-		/* Nothing special needs to be done to enable coherency */
-		pr_info("CMP IOCU detected\n");
-		hw_coherentio = 1;
-		if (coherentio == 0)
-			pr_info("Hardware DMA cache coherency disabled\n");
-		else
-			pr_info("Hardware DMA cache coherency enabled\n");
-	} else {
-		if (coherentio == 1)
-			pr_info("Hardware DMA cache coherency unsupported, but enabled from command line!\n");
-		else
-			pr_info("Software DMA cache coherency enabled\n");
-	}
-}
-
 void __init *plat_get_fdt(void)
 {
 	if (fw_arg0 != -2)
@@ -92,8 +68,6 @@ void __init *plat_get_fdt(void)
 void __init plat_mem_setup(void)
 {
 	__dt_setup_arch(plat_get_fdt());
-
-	plat_setup_iocoherency();
 }
 
 #define DEFAULT_CPC_BASE_ADDR	0x1bde0000

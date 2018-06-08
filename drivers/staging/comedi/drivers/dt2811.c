@@ -1,18 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0+
 /*
  * Comedi driver for Data Translation DT2811
  *
  * COMEDI - Linux Control and Measurement Device Interface
  * Copyright (C) David A. Schleef <ds@schleef.org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 /*
@@ -96,11 +87,11 @@
  *    6      6      100 kHz	 6   1000000
  *    7     12       50 kHz	 7   10000000
  */
-const unsigned int dt2811_clk_dividers[] = {
+static const unsigned int dt2811_clk_dividers[] = {
 	1, 10, 2, 3, 4, 5, 6, 12
 };
 
-const unsigned int dt2811_clk_multipliers[] = {
+static const unsigned int dt2811_clk_multipliers[] = {
 	1, 10, 100, 1000, 10000, 100000, 1000000, 10000000
 };
 
@@ -316,7 +307,7 @@ static int dt2811_ai_cmd(struct comedi_device *dev,
 static unsigned int dt2811_ns_to_timer(unsigned int *nanosec,
 				       unsigned int flags)
 {
-	unsigned long long ns = *nanosec;
+	unsigned long long ns;
 	unsigned int ns_lo = COMEDI_MIN_SPEED;
 	unsigned int ns_hi = 0;
 	unsigned int divisor_hi = 0;
@@ -588,8 +579,8 @@ static int dt2811_attach(struct comedi_device *dev, struct comedi_devconfig *it)
 	s = &dev->subdevices[0];
 	s->type		= COMEDI_SUBD_AI;
 	s->subdev_flags	= SDF_READABLE |
-			  (it->options[2] == 1) ? SDF_DIFF :
-			  (it->options[2] == 2) ? SDF_COMMON : SDF_GROUND;
+			  ((it->options[2] == 1) ? SDF_DIFF :
+			   (it->options[2] == 2) ? SDF_COMMON : SDF_GROUND);
 	s->n_chan	= (it->options[2] == 1) ? 8 : 16;
 	s->maxdata	= 0x0fff;
 	s->range_table	= board->is_pgh ? &dt2811_pgh_ai_ranges

@@ -23,7 +23,6 @@
 #include <linux/fs.h>
 #include <linux/buffer_head.h>
 #include <linux/workqueue.h>
-#include <linux/nilfs2_fs.h>
 #include "nilfs.h"
 
 struct nilfs_root;
@@ -158,7 +157,7 @@ struct nilfs_sc_info {
 	unsigned long		sc_blk_cnt;
 	unsigned long		sc_datablk_cnt;
 	unsigned long		sc_nblk_this_inc;
-	time_t			sc_seg_ctime;
+	time64_t		sc_seg_ctime;
 	__u64			sc_cno;
 	unsigned long		sc_flags;
 
@@ -181,6 +180,7 @@ struct nilfs_sc_info {
 	unsigned long		sc_watermark;
 
 	struct timer_list	sc_timer;
+	struct task_struct     *sc_timer_task;
 	struct task_struct     *sc_task;
 };
 
